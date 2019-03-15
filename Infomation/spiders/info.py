@@ -231,7 +231,8 @@ class InformationSpider(scrapy.Spider):
             item['createdAt'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')     # 创建时间
             item['updatedAt'] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')     # 更新时间
             # item['note'] = response.url
-            print(item)
+            item.requestDetail()
+            #print(item)
             yield item
 
         # 获取下一页链接

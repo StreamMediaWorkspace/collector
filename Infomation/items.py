@@ -4,42 +4,44 @@
 #
 # See documentation in:
 # https://doc.scrapy.org/en/latest/topics/items.html
-
 import scrapy
-
+from urllib.parse import urlencode
+import requests  
 
 class InfomationItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
-
-    brandId = scrapy.Field()      # 品牌词id
-
+    brandId = scrapy.Field()     # 品牌词id
     title = scrapy.Field()       # 标题
-
-    info = scrapy.Field()       # 内容
-
-    link = scrapy.Field()      # 文章链接
-
+    info = scrapy.Field()        # 内容
+    link = scrapy.Field()        # 文章链接
     newsAt = scrapy.Field()      # 文章发布时间
+    newsType = scrapy.Field()    # 新闻对应类型，0: 无(默认),1: 图片地址, 2：视频地址
+    newsLogoUrl = scrapy.Field() # 文章包含的图片或视频地址， 如文章未包含媒体信息，则默认为空字符
+    mediaName = scrapy.Field()   # 媒体名称
+    mediaType = scrapy.Field()   # 媒体类型
+    fromSrc = scrapy.Field()     # 抓取来源 1: 百度新闻抓取,2: 百度网页抓取，3: 今日头条抓取
+    brandPos = scrapy.Field()    # 关键词位置 0 不在标题和内容中,1 在标题中，2 在内容中，3，在标题和内容中
+    autoId = scrapy.Field()      # 对外暴露id
+    relatedId = scrapy.Field()   # 相关资讯关联id 此id是某一信息表id
+    createdAt = scrapy.Field()   # 创建时间
+    updatedAt = scrapy.Field()   # 更新时间
+    note = scrapy.Field()        # 备注
+    detail = scrapy.Field() 
 
-    newsType = scrapy.Field()       # 新闻对应类型，0: 无(默认),1: 图片地址, 2：视频地址
+    def requestDetail(self):
+        print(self['link'])
+        respone = requests.get(self['link']) 
 
-    newsLogoUrl = scrapy.Field()         # 文章包含的图片或视频地址， 如文章未包含媒体信息，则默认为空字符
+        if respone.encoding == 'ISO-8859-1':
+            encodings = requests.utils.get_encodings_from_content(respone.text)
+        if encodings:
+            encoding = encodings[0]
+        else:
+            encoding = respone.apparent_encoding
+        encode_content = respone.content.decode(encoding, 'replace')#.encode('utf8', 'replace')
 
-    mediaName = scrapy.Field()        # 媒体名称
+        self['detail'] = encode_content;
 
-    mediaType = scrapy.Field()      # 媒体类型
 
-    fromSrc = scrapy.Field()        # 抓取来源 1: 百度新闻抓取,2: 百度网页抓取，3: 今日头条抓取
-
-    brandPos = scrapy.Field()       # 关键词位置 0 不在标题和内容中,1 在标题中，2 在内容中，3，在标题和内容中
-
-    autoId = scrapy.Field()         # 对外暴露id
-
-    relatedId = scrapy.Field()       # 相关资讯关联id 此id是某一信息表id
-
-    createdAt = scrapy.Field()      # 创建时间
-
-    updatedAt = scrapy.Field()      # 更新时间
-
-    note = scrapy.Field()       # 备注
+        print(self['detail'])
