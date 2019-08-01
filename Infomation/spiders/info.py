@@ -14,6 +14,10 @@ from urllib.parse import urlencode
 from Infomation.items import InfomationItem
 from scrapy.utils.project import get_project_settings
 
+import sys
+sys.path.append("//home//yang//workspace//scrapy//collector//Infomation//spiders//baiduInfo")
+import BaiduInfo
+
 settings = get_project_settings()
 
 # import logging
@@ -21,12 +25,13 @@ settings = get_project_settings()
 
 
 class InformationSpider(scrapy.Spider):
+    this.scrapyObject = null;
     name = 'info'
     # allowed_domains = ['www.baidu.com']
 
     def __init__(self):
         super(InformationSpider, self).__init__()
-
+        self.scrapyObject = BaiduInfo()
         '''
         self.port = settings['MYSQL_PORT']
         self.host = settings['MYSQL_HOST']
@@ -40,40 +45,32 @@ class InformationSpider(scrapy.Spider):
         #self.brand_dict = {}
         self.media_dict = {}
         self.key_result = ['殡仪']
+        self.keys = ['殡仪']
 
     def start_requests(self):
-        # baidu zixun
-        # base_url = 'https://www.baidu.com/s?ie=utf-8&cl=2&rtt=1&bsst=1&tn=news&word={}&pn=0'
-        #brand_sql = "select * from brand;"
-        #self.cursor.execute(brand_sql)
-        #self.cursor.fetchall()
-        # print(brand_result)
-        for key in self.key_result:
-            # print(brand)
-            #self.brand_dict['{}'.format(brand)]
-            key = urllib.parse.quote(key, safe='/', encoding=None, errors=None)
-            request_url = 'https://www.baidu.com/s?tn=news&rtt=4&bsst=1&cl=2&wd={}'.format(key)
-
-            yield scrapy.Request(url=request_url, callback=self.brand_parse)
-
-        # 查询数据库，获取关键字及对应id, 并构造请求start_url
-        # for kwd in kwd_sheet.find().limit(2):
-        #     self.kwd_dict['{}'.format(kwd.get('name'))] = kwd.get('id')
-        #     # self.start_urls.append(base_url.format(kwd.get('name')))
-        #     url = base_url.format(kwd.get('name'))
-        #     # print(kwd.get('name'))
-        #     yield scrapy.Request(url=url, callback=self.generic_parse)
+        self.scrapyObject.start(self.keys)
+        return
+        # for key in self.key_result:
+        #     # print(brand)
+        #     #self.brand_dict['{}'.format(brand)]
+        #     key = urllib.parse.quote(key, safe='/', encoding=None, errors=None)
+        #     request_url = 'https://www.baidu.com/s?tn=news&rtt=4&bsst=1&cl=2&wd={}'.format(key)
+        #     yield scrapy.Request(url=request_url, callback=self.brand_parse)
 
         # 百度网页新闻
-        # domian_url = 'https://www.baidu.com/s?wd=site:{} {}&pn=0&ie=utf-8'
-        #media_sql = 'select * from media;'
-        #self.cursor.execute(media_sql)
-        media_result = ['www.weibo.com'] #self.cursor.fetchall()
-        for media in media_result:
-            #self.media_dict['{}'.format(media[4])] = media[2]
-            for key in self.key_result:
-                media_url = 'https://www.baidu.com/s?wd=site:{} {}&pn=0&ie=utf-8'.format(media, key)
-                yield scrapy.Request(url=media_url, callback=self.domain_parse)
+        # media_result = ['www.weibo.com'] #self.cursor.fetchall()
+        # for media in media_result:
+        #     self.media_dict['{}'.format(media[4])] = media[2]
+        #     for key in self.key_result:
+        #         media_url = 'https://www.baidu.com/s?wd=site:{} {}&pn=0&ie=utf-8'.format(media, key)
+        #         yield scrapy.Request(url=media_url, callback=self.domain_parse)
+
+        for key in self.key_result:
+            key = urllib.parse.quote(key, safe='/', encoding=None, errors=None)
+            media_url = 'https://s.weibo.com/article?q={}&Refer=weibo_article'.format(key)
+            print(media_url);
+            yield scrapy.Request(url=media_url, callback=self.weibo_parse)
+        
 
         # 抓取今日头条
         print(self.key_result)
@@ -97,6 +94,9 @@ class InformationSpider(scrapy.Spider):
                 #     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.67 Safari/537.36',
                 # }
                 yield scrapy.Request(url=toutiao_url, callback=self.toutiao_parse)
+
+    def weibo_parse(self, response):
+        print(response);
 
     def brand_parse(self, response):
         #print(response)
